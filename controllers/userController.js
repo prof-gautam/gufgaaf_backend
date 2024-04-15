@@ -1,5 +1,6 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
+const logger = require("../utils/logger");
 
 module.exports.login = async (req, res, next) => {
   try {
@@ -11,8 +12,10 @@ module.exports.login = async (req, res, next) => {
     if (!isPasswordValid)
       return res.json({ msg: "Incorrect Username or Password", status: false });
     delete user.password;
+    logger.info(`User sucessfully logged in`);
     return res.json({ status: true, user });
   } catch (ex) {
+    logger.error(`User failed to log in!`);
     next(ex);
   }
 };
@@ -33,8 +36,10 @@ module.exports.register = async (req, res, next) => {
       password: hashedPassword,
     });
     delete user.password;
+    logger.info(`User registered sucessfully!`);
     return res.json({ status: true, user });
   } catch (ex) {
+    logger.error(`User failed to register`);
     next(ex);
   }
 };
@@ -47,6 +52,7 @@ module.exports.getAllUsers = async (req, res, next) => {
       "avatarImage",
       "_id",
     ]);
+    logger.info(`Got users`);
     return res.json(users);
   } catch (ex) {
     next(ex);
@@ -65,11 +71,13 @@ module.exports.setAvatar = async (req, res, next) => {
       },
       { new: true }
     );
+    logger.info(`Avatar set sucessfully to: ${userId}`);
     return res.json({
       isSet: userData.isAvatarImageSet,
       image: userData.avatarImage,
     });
   } catch (ex) {
+    logger.error(`Unable to set avatar`);
     next(ex);
   }
 };
@@ -78,8 +86,10 @@ module.exports.logOut = (req, res, next) => {
   try {
     if (!req.params.id) return res.json({ msg: "User id is required " });
     onlineUsers.delete(req.params.id);
+    logger.info(`User ${req.params.id} logged out sucessfullty!`);
     return res.status(200).send();
   } catch (ex) {
+    logger.error(`Unable to logout`);
     next(ex);
   }
 };
